@@ -38,15 +38,6 @@ Neste App são exploradas as seguintes técnicas e tecnologias:
 -  **Elastic Constainer Registry**: o repositório de containers da AWS, onde vamos colocar as nossas imagens.
 
 -  **Separação de ambientes**: 2 ambientes separados, construídos de forma automática pelo Terraform, reutilizando código.
-
-  
-
-## 📁 Acesso ao projeto
-
-  
-
-Você pode [baixar o zip](https://github.com/leollo98/iac-curso5/archive/refs/heads/Aula_6.zip) ou [acessar o código fonte](https://github.com/leollo98/iac-curso5/tree/Aula_6) do projeto final.
-
   
 
 ## 🛠️ Abrir e rodar o projeto
@@ -61,8 +52,7 @@ O projeto foi desenvolvido no VSC (Visual Studio Code), sendo assim, instale o V
 
   
 
-Vá até a paste a abra a pasta do projeto. Após abrir o projeto abra um terminal, pode ser o integrado com o VSC, navegue até a pasta `env/Prod`  e execute o comando `terraform init` dentro dela, agora temos o Terraform iniciado e podemos começar a utilizá-lo. Para criar a infraestrutura, execute o `terraform apply` na pastas de Produção (`env/Prod`).
+Vá até a paste a abra a pasta do projeto. Após abrir o projeto abra um terminal, pode ser o integrado com o VSC, navegue até a pasta `env/prod`  e execute o comando `terraform init` dentro dela, agora temos o Terraform iniciado e podemos começar a utilizá-lo. Para criar a infraestrutura, execute o `terraform apply` na pastas de Produção (`env/prod`).
 
   
-
 🏆
