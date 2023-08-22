@@ -1,0 +1,102 @@
+Provedores:
+
+para iniciar o projeto temos primeiro que escolher o provides e 
+definir nosso backend s3, e para isso devemos inserir o seguinte
+bloco de cod:
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.27"
+    }
+  }
+
+  required_version = ">= 0.14.9"
+}
+
+provider "aws" {
+  profile = "default"
+  region  = "us-east-2"
+}
+
+aqui estamos definindo a versão do terraform e nosso provedor 
+que no caso é a AWS, criando o nosso arquivo chamado de provider.tf 
+junto com o provedor estamos definindo ondeserá a regiao que iremos 
+utilizar, no caso é a us-east-2. Agora temos que denifir nosso 
+backend s3, com o seguinte bloco de cod, na pasta infra:
+
+terraform {
+  backend "s3" {
+    bucket = "terraform-docker-ecr-ssdvd"
+    key    = "prod/terraform.tfstate"
+    region = "us-east-2"
+  }
+}
+
+aqui estamos defindo que o estado do terraform ficara dentro do bucket
+"terraform-docker-ecr-ssdvd" e o caminho dentro de bucket será
+key    = "prod/terraform.tfstate" e a região region = "us-east-2"
+isso tudo dentro do arquivo backend.tf de cada ambiente.
+
+Repositório docker:
+
+E para iniciarmos nosso repo para armazenar nossas imagens docker
+inserimos o seguinte bloco de cod:
+
+resource "aws_ecr_repository" "repositorio" {
+  name                 = var.nome-repo
+}
+
+no arquivo ecr.tf dentro da pasta infra, estamos criando o recurso 
+aws_ecr_repository com o nome de repositorio e estamos utilizando
+a var.nome-repo para assim que criarmos esse repo, ja definimos o 
+nome do repo com o nome do ambiente.
+
+com o repo criado subimos a imagem buildada anteriormente para o 
+ECR, mas caso nao lembrar siga os seguintes comandos, certifique-se 
+de estar na pasta do arquivo Dockerfile, para poder executar os 
+comandos, iremos logar nosso docker com o nosso serviço do ECR,
+com o comando:
+
+aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 027662851187.dkr.ecr.us-east-2.amazonaws.com
+
+esperamos receber a mensagem de login feito com sucesso em ingles,
+em seguida iremos executar o seguinte comando:
+
+docker build -t prod .
+
+esse comando ira construir nossa imagem com o nome de prod e 
+utilizando o Dockerfile da pasta da onde iniciamos o comando.
+feito isso so esperar o tempo de build. Com o build ja realizado
+iremos renomear a tag da nossa imagem para o padrao ecr, dessa
+forma:
+
+docker tag prod:latest 027662851187.dkr.ecr.us-east-2.amazonaws.com/prod:latest
+
+apos o comando rodar, ja podemos subir a imagem para o ecr, com
+o seguinte comando:
+
+docker push 027662851187.dkr.ecr.us-east-2.amazonaws.com/prod:latest
+
+ira começar a fazer o upload, agora so esperar a conclusão do push.
+
+Nesta aula aprendemos:
+
+Iniciar um projeto no Terraform, fazendo a organização das pastas 
+para permitir que existam vários ambientes, como o ambiente de 
+desenvolvimento, o ambiente de homologação, que é usado para testes, 
+e o ambiente de produção, onde a aplicação pronta passa a atender os clientes.
+
+Criar o provedor e suas configurações, assim podemos usar a AWS como
+provedora e definir qual a região devemos usar.
+
+Criar o repositório no ECR, que possibilita colocarmos a imagem da 
+aplicação na AWS e utilizá-la para o projeto, sem a preocupação de 
+disponibilidade e integridade das imagens, já que o ECR é um repositório.
+
+
+
+
+
+

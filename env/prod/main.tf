@@ -1,6 +1,6 @@
 module "prod" {
     source = "../../infra"
 
-    nome_repositorio = "prod"
+    nome-repo = "prod"
     
 }
