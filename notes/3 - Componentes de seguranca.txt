@@ -1,0 +1,83 @@
+Security Group load balance:
+
+para criarmos nosso load balance, antes devemos criar nosso grupo de seguranca, e com
+o seguinte bloco de codigo:
+
+resource "aws_security_group" "alb" {
+  name        = "alb-ecs"
+  vpc_id      = module.vpc.vpc_id
+}
+
+estaremos criando um recurso aws_security_group com o nome de alb, e com o 
+name        = "alb-ecs", utilizando nossa vpc vpc_id      = module.vpc.vpc_id,
+tendo assim ja vinculando nosso sg do alb. E com o seguinte bloco de cod:
+
+resource "aws_security_group_rule" "tcp_alb" {
+  type              = "ingress"
+  from_port         = 8000
+  to_port           = 8000
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.alb.id
+}
+
+aqui estamos definindo nossas regras de entrada, representado ai no type = "ingress"
+e sinalizando que a porta 8000 sera a que recebera a regra , ira aceitar o protocolo
+tcp e podera aceitar conexao de todos os ipv4, e ja estara utilizando nosso sg criado
+anteriormente. E ja aqui:
+
+resource "aws_security_group_rule" "tcp_alb" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.alb.id
+}
+
+estamos criando nossa regra de saida, sinalizado por type = "egress", e estamos sinalizando
+que todas as portas poderao ser usadas para a saida, e o -1 representa que iremos 
+trabalhar com qualquer protocolo de saida, de todos os ipv4 que entrarem e tambem
+ja estamos utilizando o sg criado anteriormente.
+
+Security Group da rede privada:
+
+e tambem iremos criar nossa rede privada, e para isso utilizamos o seguinte bloco 
+de cod:
+
+resource "aws_security_group" "privado" {
+  name        = "privado-ecs"
+  vpc_id      = module.vpc.vpc_id
+}
+
+aqui estamos criando o recurso aws_security_group com o nome privado, onde o nome logico
+e privado-ecs e tambem ja vinculando a vpc, com isso feito, devemos denifir nossa regra
+de entrada para essa subnet privada, com o bloco de cod:
+
+resource "aws_security_group_rule" "entrada-ecs" {
+  type              = "ingress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  source_security_group_id = aws_security_group.alb.id
+  security_group_id = aws_security_group.privado.id
+}
+
+estamos criando um recurso aws_security_group_rule com o nome de entrada-ecs, do tipo
+ingress quais sao as regras de entreda da nossa subnet privada, recebendo de qualquer
+porta e de qualquer protocolo, porem so iremos aceitar as requisicoes se elas vierem
+do nosso security group do alb, e tambem ja vinculamos com o sg que criamos antes. E 
+agora iremos definir nossa regra de saida, com o bloco de cod:
+
+resource "aws_security_group_rule" "saida-ecs" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = aws_security_group.privado.id
+}
+
+estamos criando um recurso aws_security_group_rule com o nome saida-ecs, que e do tipo
+saida, enviando de qualquer porta, qualquer protocolo e tambem para qualquer ip, ja
+que na saida devemos nos comunicarmos com os clients.
