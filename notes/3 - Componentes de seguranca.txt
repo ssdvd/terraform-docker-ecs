@@ -79,5 +79,5 @@ resource "aws_security_group_rule" "saida-ecs" {
 }
 
 estamos criando um recurso aws_security_group_rule com o nome saida-ecs, que e do tipo
-saida, enviando de qualquer porta, qualquer protocolo e tambem para qualquer ip, ja
+saida, respondendo de qualquer porta, qualquer protocolo e tambem para qualquer ip, ja
 que na saida devemos nos comunicarmos com os clients.
