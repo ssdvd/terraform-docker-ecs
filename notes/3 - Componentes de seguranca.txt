@@ -81,3 +81,86 @@ resource "aws_security_group_rule" "saida-ecs" {
 estamos criando um recurso aws_security_group_rule com o nome saida-ecs, que e do tipo
 saida, respondendo de qualquer porta, qualquer protocolo e tambem para qualquer ip, ja
 que na saida devemos nos comunicarmos com os clients.
+
+Configurando o IAM:
+
+para criamos a role no iam para esse servico, iremos criar um novo arquivo para
+o iam, o arquivo sera o iam.tf e nele ficara tudo relacionado ao mesmo, inserimos 
+o seguinte bloco de cod:
+
+resource "aws_iam_role" "cargo" {
+  name = "${var.cargo-iam}-cargo"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = ["ec2.amazonaws.com",
+                     "ecs-tasks.amazon.com"]
+        }
+      },
+    ]
+  })
+}
+
+estamos criando o recurso aws_iam_role com o nome de cargo, adicionando uma variavel
+para nomear esse recurso a var.cargo-iam, sera criada no arquivo variaveis.tf e sera
+denida na pasta do ambiente, no caso de uso sera o prod e recebera esse mesmo valor,
+agora iremos criar uma politica para utilizar na role criada, com o seguinte bloco de
+cod:
+
+resource "aws_iam_role_policy" "ecs-ecr" {
+  name = "ecs-ecr"
+  role = aws_iam_role.cargo.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ecr:GetAuthorizationToken",
+          "ecr:BatchCheckLayerAvailability",
+          "ecr:GetDownloadUrlForLayer",
+          "ecr:BactchGetImage",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+    ]
+  })
+}
+
+estamos criando o recurso aws_iam_role_policy com o nome tambem de ecs-ecr, o nome do
+recurso tambem, associamos essa polica a role que criamos com o nome de cargo em 
+role = aws_iam_role.cargo.id, em seguida aplicamos todas as permissoes que serao
+necessaria para o manuseio, essas permissoes ja foram vistas anteriomente.feito isso
+iremos criar nosso perfil para as instancias no iam, com o seguinte bloco de cod:
+
+resource "aws_iam_instance_profile" "perfil" {
+  name = "${var.cargo-iam}-perfil"
+  role = aws_iam_role.cargo.name
+}
+
+estamos criando o recurso aws_iam_instance_profile com o nome de perfil, o nome que
+estamos dando a esse perfil ira acompanhar a nossa variavel var.cargo-iam-perfil,
+assim ficara mais facil do que ambiente se trata esse perfil e em seguida assossiamos
+a role recem criada a esse perfil de instancias.
+
+Nesta aula aprendemos:
+
+As diferenças entres grupos de segurança para redes públicas e privadas, nas quais as 
+redes públicas recebem todas as requisições vindas da internet e as redes privadas 
+recebem apenas de outras redes e não tem uma conexão direta com a internet.
+
+Quais as possibilidades para liberar as entradas dos grupos de segurança, tendo o 
+CIDR ou outro grupo de segurança como possibilidades.
+
+Configurar os recursos do IAM, como o cargo e as políticas da aplicação; esses recursos 
+fornecem as permissões que são necessárias para que a aplicação possa ser executada com 
+segurança.
