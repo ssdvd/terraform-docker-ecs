@@ -1,0 +1,19 @@
+Load balancer da aplicacao:
+
+para criamos nosso balanceador de cargas de requisicoes que iram para a nossa aplicacao
+devemos inserir o seguinte bloco de cod:
+
+
+resource "aws_lb" "alb" {
+  name               = "ecs-django"
+  security_groups    = [aws_security_group.alb.id]
+  subnets            = [module.vpc.public_subnets]
+}
+
+no arquvido alb.tf estamos criando o recurso aws_lb com o nome de alb e o nome do recurso 
+de ecs-django referenciando a nossa aplicacao nesse projeto, ja em security_groups 
+estamos assossiando o nosso security_group criado anteriormente no arquivo sg.tf e em
+subnets tambem estamos referenciando nossas subnets publicas, isso ja e facilitado 
+por conta do modulo vpc entao com a linha module.vpc.public_subnets ja estamos 
+referenciando todas as nossas subnets publicas, feito isso podemos partir para a 
+configuracao da entrada no nosso load balancer.
