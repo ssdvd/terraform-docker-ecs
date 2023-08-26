@@ -1,0 +1,98 @@
+Cluster:
+
+para criamos o cluster devemos inserir o seguinte bloco de cod:
+
+module "ecs" {
+  source = "terraform-aws-modules/ecs/aws"
+
+  name = var.ambiente
+  container_insights = true
+  capacity_providers = ["FARGATE"]
+  default_capacity_provider_use_fargate = [
+    {
+        capacity_providers = "FARGATE"
+    }
+  ]
+}
+
+aqui estamos puxando o modulo ecs do terraform feito pela aws, para que seja mais
+pratico o uso do mesmo, no source estamos referenciando o caminho do modulo
+em name estamos nomeado nosso cluster, em container_insights = true, habilitamos
+que os container possam ser enxergado para que o aws posso dar insights e ver o que acontece, 
+em capacity_providers a opcao usada e FARGATE onde o proprio ira realizar o manuseio
+das nossas intancias que sao provisionadas para os nossos container, assim ficando mais
+pratico o uso, pois se trata de uma tecnologia serveless e 
+em default_capacity_provider_use_fargate, definimos o tipo de capacidade padrao que
+sera utilizada pelo o FARGATE, pois ha mais de um tipo. vale citar que aqui estamos
+criando uma variavel chamada de ambiente, para que seja mais facil identificar do que
+se trata o cluster.
+
+TASK:
+
+para criamos nossa task, inseriemos o seguinte bloco de cod:
+
+resource "aws_ecs_task_definition" "django-api" {
+  family                   = "django-api"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  cpu                      = 256
+  memory                   = 512
+  execution_role_arn       = aws_iam_role.cargo.arn
+  container_definitions = jsonencode(
+    [
+      {
+        "name"      = "producao"
+        "image"     = "027662851187.dkr.ecr.us-east-2.amazonaws.com/producao:v1"
+        "cpu"       = 256
+        "memory"    = 512
+        "essential" = true
+        "portMappings" = [
+          {
+            "containerPort" = 8000
+            "hostPort"      = 8000
+          }
+        ]
+      }
+    ]
+  )
+}
+
+aqui estamos criando um recurso aws_ecs_task_definition com o nome django-api, definindo
+a family com o mesmo nome do recurso, em requires_compatibilities estamos dizendo que 
+a task ira trabalhar com o FARGATE, em network_mode dizemos que ira utilizar nossa vpc
+em cpu e memory, definimos o tamanho de processamento e memoria que sera utilizada 
+pelo o container, em execution_role_arn estamos dando as permissoes necessarias para
+essa task poder criar o container, em container_definitions iremos especificar nosso
+container, no proximo bloco.
+
+container_definitions = jsonencode(
+    [
+      {
+        "name"      = "producao"
+        "image"     = "027662851187.dkr.ecr.us-east-2.amazonaws.com/producao:v1"
+        "cpu"       = 256
+        "memory"    = 512
+        "essential" = true
+        "portMappings" = [
+          {
+            "containerPort" = 8000
+            "hostPort"      = 8000
+          }
+        ]
+      }
+    ]
+  )
+
+aqui iremos definir nossa task via jsonencode, primeiro definimos o nome do container
+no caso como producao, informamos qual imagem vamos utilizar, em seguida definimos
+o tamanho da nossa cpu e memoria, informamos que o container ira ter as caracteristicas
+essenciais e mapeamos as portas que disponiblizamos, no caso e a porta 8000, definimos
+tanto a porta do container quanto a do host.
+
+Nesta aula aprendemos:
+Criar o cluster do ECS através de um módulo. Esse cluster é o conjunto de máquinas 
+gerenciadas pelo Fargate, onde o código da nossa aplicação vai ser executado.
+
+Definir como a aplicação deve ser executada através da Task, com informações da 
+máquinas escolhida, com as opção de configurações na documentação e qual o provedor 
+da aplicação, que pode ser o EC2, Fargate ou Fargate-Spot.
