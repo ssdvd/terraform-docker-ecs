@@ -10,7 +10,7 @@ resource "aws_iam_role" "cargo" {
         Sid    = ""
         Principal = {
           Service = ["ec2.amazonaws.com",
-                     "ecs-tasks.amazon.com"]
+          "ecs-tasks.amazon.com"]
         }
       },
     ]

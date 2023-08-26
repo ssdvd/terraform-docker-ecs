@@ -17,3 +17,69 @@ subnets tambem estamos referenciando nossas subnets publicas, isso ja e facilita
 por conta do modulo vpc entao com a linha module.vpc.public_subnets ja estamos 
 referenciando todas as nossas subnets publicas, feito isso podemos partir para a 
 configuracao da entrada no nosso load balancer.
+
+Alvo do load balancer:
+
+para criamos o alvo do lb, inserimoes o seguinte bloco de cod:
+
+resource "aws_lb_target_group" "tg" {
+  name        = "ecs-django-tg"
+  port        = 8000
+  protocol    = "HTTP"
+  target_type = "ip"
+  vpc_id      = module.vpc.vpc_id
+}
+
+estamos criando o recurso aws_lb_target_group com o nome de tg, o nome dado foi
+ecs-django-tg, para melhor identificacao futura, para a porta 8000 e o protocolo
+http, com o tipo de alvo IP, onde o alvo sera por ip, por si tratar de um ecs e
+associamos nossa vpc para que o tipo do alvo possa identificar o container.
+
+Entrada do load balancer:
+
+com nosso alb criado, podemos criar nosso listener/entrada dele, com o seguinte bloco
+de cod:
+
+resource "aws_lb_listener" "http" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = "8000"
+  protocol          = "HTTP"
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg.arn
+  }
+}
+
+estamos criando o recruso aws_lb_listener com o nome http, dentro desse recurso devemos
+associar nosso alb pelo arn, com a chave-valor load_balancer_arn = aws_lb.alb.arn, tambem
+iremos dizer em qual porta recebera as requisicoes com port = "8000", protocolo com
+protocol = "HTTP" e a acao padrao que o alb ira ter ao receber a requisicao, do tipo
+type = "forward" que para passar a requisicao adiante e indicamos qual e nosso grupo
+alvo com target_group_arn = aws_lb_target_group.tg.arn
+
+Alem disso criamos duas saidas do tipo output
+
+output "alb-dns" {
+  value = aws_lb.alb.dns_name
+}
+
+que ira printar o dns do alb para o acesso e:
+
+output "ip-alb" {
+    value = module.prod.IP
+  }
+
+que ira printar o ip do alb do nosso ambiente de producao.
+
+
+Nesta aula vimos:
+Criar um Application Load Balancer, um Load Balancer do layer 7, que pode analisar os 
+pacotes e protocolos, distribuindo-os de forma inteligente, sem sobrecarregar nenhuma 
+máquina.
+
+Criar a entrada do Load Balancer, especificando o protocolo que o Application Load Balancer 
+deve usar, que no nosso caso é o HTTP; porém ele também suporta HTTPS.
+
+O alvo do Load Balancer, que neste caso é um conjunto de endereços IP, sendo que normalmente 
+são os IDs das instâncias; porém essa mudança ocorre por conta da utilização do ECS 
+que veremos a seguir.

@@ -1,6 +1,6 @@
 resource "aws_security_group" "alb" {
-  name        = "alb-ecs"
-  vpc_id      = module.vpc.vpc_id
+  name   = "alb-ecs"
+  vpc_id = module.vpc.vpc_id
 }
 
 resource "aws_security_group_rule" "tcp_alb" {
@@ -22,17 +22,17 @@ resource "aws_security_group_rule" "tcp_alb" {
 }
 
 resource "aws_security_group" "privado" {
-  name        = "privado-ecs"
-  vpc_id      = module.vpc.vpc_id
+  name   = "privado-ecs"
+  vpc_id = module.vpc.vpc_id
 }
 
 resource "aws_security_group_rule" "entrada-ecs" {
-  type              = "ingress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 0
+  protocol                 = "-1"
   source_security_group_id = aws_security_group.alb.id
-  security_group_id = aws_security_group.privado.id
+  security_group_id        = aws_security_group.privado.id
 }
 
 resource "aws_security_group_rule" "saida-ecs" {
