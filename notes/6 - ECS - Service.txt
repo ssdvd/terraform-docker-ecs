@@ -1,0 +1,57 @@
+Servico:
+
+para criarmos um servico para que o mesmo possa iniciar nossa tarefa, devemos entao
+inserir o seguinte bloco de cod:
+
+resource "aws_ecs_service" "django-api" {
+  name            = "django-api"
+  cluster         = module.ecs.cluster_id
+  task_definition = aws_ecs_task_definition.django-api.arn
+  desired_count   = 3
+
+estamos criando um recurso aws_ecs_service com o nome logico django-api, e o name
+de django-api tambem, em cluster estamos associando o nosso cluster criado com o 
+module  e por conta disso estamos referenciando dessa forma module.ecs.cluster_id
+em seguinda estamos definindo nossa task_definition com o nosso recurso criado
+aws_ecs_task_definition.django-api.arn, pois essa chave precisa do arn do recurso
+em desired_count estamos dizendo que queremos 3 instancias naquela porta,
+e adicionando o lb dentro do nosso service:
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.tg.arn
+    container_name   = "producao"
+    container_port   = 8000
+  }
+}
+
+estamos associando nosso lb, informando o arn do nosso target group, tambem informando
+o nome e porta do nosso container da nossa task.
+
+configurando o serivco:
+
+com isso feito, devemos configurar nosso service e com o seguinte bloco de cod:
+
+  network_configuration {
+    subnets = module.vpc.private_subnets
+    security_groups = [aws_security_group.privado.id]
+  }
+
+aqui estamos definindo o network_configuration, a mesma e obrigatoria 
+dentro dessa configuracao pois estamos utilizando o awsvpc em nosso fargate,
+para que toda vez que as instancias subirem atraves da task, todas elas tem que estar 
+dentro da nossa rede para que o nosso load balancer possa reconhecer e fazer o 
+repasse das requisicoes, e tambem informamos em qual security_groups ele deve localizar,
+outra configuracao recomendada e a capacity_provider_strategy:
+
+
+  capacity_provider_strategy {
+    capacity_provider = "FARGATE"
+    weight = 1
+  }
+
+aqui vamos definir qual o tipo de estrategia de capacidado provedor, que no nosso caso
+ira ser o fargate, em capacity_provider ha 3 tipos, o que iremos usar sera
+o padrao mesmo FARGATE, e em weight estamos definindo que iremos utilizar 100% da instancia
+que sera provisionada pelo o fargate. Essa configuracao define que sempre utilizaremos 
+para prover as instancias, o FARGATE e nao o ec2 ou fargate spot.
+
