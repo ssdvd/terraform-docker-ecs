@@ -55,3 +55,25 @@ o padrao mesmo FARGATE, e em weight estamos definindo que iremos utilizar 100% d
 que sera provisionada pelo o fargate. Essa configuracao define que sempre utilizaremos 
 para prover as instancias, o FARGATE e nao o ec2 ou fargate spot.
 
+Subindo aplicacao:
+
+devido a uma att no module ecs, tivemos que refator uma parte do cod do arquivo ecs,
+ficando assim:
+
+module "ecs" {
+  source = "terraform-aws-modules/ecs/aws"
+
+  cluster_name = var.ambiente
+  fargate_capacity_providers = {
+    FARGATE = {
+      default_capacity_provider_strategy = {
+        weight = 1
+      }
+    }
+  }
+  cluster_settings = {
+    name  = "containerInsights"
+    value = "enabled"
+  }
+}
+

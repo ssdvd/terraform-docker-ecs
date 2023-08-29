@@ -5,13 +5,13 @@ module "ecs" {
   fargate_capacity_providers = {
     FARGATE = {
       default_capacity_provider_strategy = {
-        weight = 100
+        weight = 1
       }
     }
-    cluster_settings = {
-      "name" : "containerInsights",
-      "value" : "enabled"
-    }
+  }
+  cluster_settings = {
+    name  = "containerInsights"
+    value = "enabled"
   }
 }
 

@@ -7,6 +7,6 @@ module "prod" {
 
 }
 
-/* output "ip-alb" {
-  value = module.prod.IP
-} */
+output "ip-alb" {
+  value = module.prod.alb-dns
+}
