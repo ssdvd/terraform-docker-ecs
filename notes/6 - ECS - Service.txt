@@ -77,3 +77,11 @@ module "ecs" {
   }
 }
 
+Nesta aula aprendemos:
+Interligar o cluster e a task, utilizando um serviço. O serviço contém todas as 
+configurações da aplicação que não estão relacionadas diretamente com o container, 
+como a quantidade desejada de instâncias, e o Load Balancer que deve ser utilizado.
+
+Criar as configurações extras que ajudam o serviço a executar a aplicação, como é o 
+caso das configurações de rede, que são obrigatórias se usarmos o Fargate, e definem 
+quais grupos de segurança e subnets devem ser utilizados.
